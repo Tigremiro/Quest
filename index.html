@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Ultra · HTML CSS JS</title>
+    <style>
+        /* === RESET & GLOBAL === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(145deg, #1e2b3c, #0f1a26);
+            padding: 1rem;
+        }
+
+        /* === CALCULADORA === */
+        .calculadora {
+            background: #1f2e3f;
+            border-radius: 2.5rem;
+            padding: 1.8rem 1.5rem 2rem;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+            width: 100%;
+            max-width: 380px;
+            transition: 0.2s;
+        }
+
+        /* === DISPLAY === */
+        .display {
+            background: #0d1721;
+            border-radius: 1.8rem;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.8rem;
+            box-shadow: inset 0 6px 10px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(255, 255, 255, 0.05);
+            text-align: right;
+            word-break: break-all;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .display .expressao {
+            font-size: 1.1rem;
+            color: #8a9bb5;
+            letter-spacing: 0.5px;
+            min-height: 1.6rem;
+            margin-bottom: 0.2rem;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .display .resultado {
+            font-size: 2.8rem;
+            font-weight: 600;
+            color: #eaf0fc;
+            line-height: 1.2;
+            text-shadow: 0 0 6px rgba(100, 180, 255, 0.2);
+            transition: 0.1s;
+        }
+
+        .display .resultado.erro {
+            color: #ff8a8a;
+            text-shadow: 0 0 10px rgba(255, 80, 80, 0.3);
+        }
+
+        /* === GRADE DE BOTÕES === */
+        .botoes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+        }
+
+        /* === BOTÕES INDIVIDUAIS === */
+        .btn {
+            background: #2b3d51;
+            border: none;
+            border-radius: 1.2rem;
+            padding: 1.1rem 0.2rem;
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: #dbe4f0;
+            box-shadow: 0 6px 0 #141f2b, 0 8px 12px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.08s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            letter-spacing: 0.5px;
+            user-select: none;
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 #141f2b, 0 6px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* cores especiais */
+        .btn-operador {
+            background: #3b5068;
+            color: #b3d0ff;
+        }
+
+        .btn-func {
+            background: #2c3f55;
+            color: #aac3e6;
+        }
+
+        .btn-igual {
+            background: #3b7dd8;
+            color: white;
+            box-shadow: 0 6px 0 #1f4a8a, 0 8px 14px rgba(0, 0, 0, 0.4);
+            font-size: 2rem;
+        }
+
+        .btn-igual:active {
+            background: #2f6bc0;
+            box-shadow: 0 1px 0 #1f4a8a, 0 6px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-limpar {
+            background: #4a3a4a;
+            color: #f7c0c0;
+            box-shadow: 0 6px 0 #2f232f;
+        }
+
+        .btn-limpar:active {
+            background: #3d2e3d;
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+
+        /* responsivo */
+        @media (max-width: 420px) {
+            .calculadora {
+                padding: 1.2rem 1rem 1.5rem;
+                border-radius: 2rem;
+            }
+            .btn {
+                font-size: 1.4rem;
+                padding: 0.9rem 0.1rem;
+                border-radius: 1rem;
+            }
+            .display .resultado {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculadora" role="application" aria-label="Calculadora">
+        <!-- DISPLAY -->
+        <div class="display">
+            <div class="expressao" id="expressao" aria-live="polite">&nbsp;</div>
+            <div class="resultado" id="resultado">0</div>
+        </div>
+
+        <!-- BOTÕES -->
+        <div class="botoes">
+            <!-- linha 1 -->
+            <button class="btn btn-limpar" data-action="clear" aria-label="Limpar tudo">AC</button>
+            <button class="btn btn-func" data-action="backspace" aria-label="Apagar último">⌫</button>
+            <button class="btn btn-func" data-action="percent" aria-label="Porcentagem">%</button>
+            <button class="btn btn-operador" data-action="divide" aria-label="Dividir">÷</button>
+
+            <!-- linha 2 -->
+            <button class="btn" data-value="7">7</button>
+            <button class="btn" data-value="8">8</button>
+            <button class="btn" data-value="9">9</button>
+            <button class="btn btn-operador" data-action="multiply" aria-label="Multiplicar">×</button>
+
+            <!-- linha 3 -->
+            <button class="btn" data-value="4">4</button>
+            <button class="btn" data-value="5">5</button>
+            <button class="btn" data-value="6">6</button>
+            <button class="btn btn-operador" data-action="subtract" aria-label="Subtrair">−</button>
+
+            <!-- linha 4 -->
+            <button class="btn" data-value="1">1</button>
+            <button class="btn" data-value="2">2</button>
+            <button class="btn" data-value="3">3</button>
+            <button class="btn btn-operador" data-action="add" aria-label="Adicionar">+</button>
+
+            <!-- linha 5 -->
+            <button class="btn btn-zero" data-value="0">0</button>
+            <button class="btn" data-value="." aria-label="Ponto decimal">,</button>
+            <button class="btn btn-igual" data-action="equals" aria-label="Resultado">=</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // === ELEMENTOS ===
+            const resultadoEl = document.getElementById('resultado');
+            const expressaoEl = document.getElementById('expressao');
+
+            // === ESTADO ===
+            let estado = {
+                valorAtual: '0',
+                operador: null,
+                valorAnterior: null,
+                resetarProximo: false,
+                expressao: '',
+                erro: false
+            };
+
+            // === FUNÇÕES AUXILIARES ===
+            function formatarNumero(num) {
+                if (num === 'Infinity' || num === '-Infinity' || num === 'NaN') {
+                    return 'Erro';
+                }
+                // limita casas decimais para evitar overflow visual
+                let str = String(num);
+                if (str.length > 16) {
+                    // tenta notação científica se for muito grande
+                    const n = Number(num);
+                    if (!isFinite(n)) return 'Erro';
+                    return n.toExponential(6);
+                }
+                return str;
+            }
+
+            function atualizarDisplay() {
+                if (estado.erro) {
+                    resultadoEl.textContent = 'Erro';
+                    resultadoEl.classList.add('erro');
+                    expressaoEl.innerHTML = '&nbsp;';
+                    return;
+                }
+                resultadoEl.classList.remove('erro');
+                let exibir = estado.valorAtual;
+                // se o valor for '0' e não tiver sido digitado nada, mantém 0
+                if (exibir === 'Infinity' || exibir === '-Infinity' || exibir === 'NaN') {
+                    resultadoEl.textContent = 'Erro';
+                    resultadoEl.classList.add('erro');
+                    return;
+                }
+                resultadoEl.textContent = formatarNumero(exibir);
+
+                // monta expressão amigável
+                let expr = '';
+                if (estado.valorAnterior !== null) {
+                    expr += formatarNumero(estado.valorAnterior) + ' ';
+                }
+                if (estado.operador) {
+                    const opMap = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+                    expr += (opMap[estado.operador] || estado.operador) + ' ';
+                }
+                if (estado.resetarProximo && estado.operador) {
+                    // mostra o valor atual sendo digitado após operador
+                    expr += formatarNumero(estado.valorAtual);
+                } else if (!estado.resetarProximo && estado.operador === null && estado.valorAnterior === null) {
+                    expr = '';
+                } else if (estado.operador === null && estado.valorAnterior !== null) {
+                    // resultado após igual
+                    expr = formatarNumero(estado.valorAnterior) + ' =';
+                }
+                expressaoEl.textContent = expr || '\u00A0';
+            }
+
+            function resetarEstado() {
+                estado.valorAtual = '0';
+                estado.operador = null;
+                estado.valorAnterior = null;
+                estado.resetarProximo = false;
+                estado.expressao = '';
+                estado.erro = false;
+                atualizarDisplay();
+            }
+
+            function tratarErro() {
+                estado.erro = true;
+                estado.valorAtual = '0';
+                estado.valorAnterior = null;
+                estado.operador = null;
+                estado.resetarProximo = false;
+                atualizarDisplay();
+            }
+
+            function calcular(a, operador, b) {
+                const numA = parseFloat(a);
+                const numB = parseFloat(b);
+                if (isNaN(numA) || isNaN(numB)) return 'Erro';
+
+                let resultado;
+                switch (operador) {
+                    case '+': resultado = numA + numB; break;
+                    case '-': resultado = numA - numB; break;
+                    case '*': resultado = numA * numB; break;
+                    case '/': 
+                        if (numB === 0) return 'Erro';
+                        resultado = numA / numB; 
+                        break;
+                    default: return 'Erro';
+                }
+                // evitar -0
+                if (resultado === 0) resultado = 0;
+                return String(resultado);
+            }
+
+            // === MANIPULADORES DE AÇÃO ===
+            function entradaNumero(valor) {
+                if (estado.erro) {
+                    resetarEstado();
+                }
+
+                if (estado.resetarProximo) {
+                    estado.valorAtual = valor;
+                    estado.resetarProximo = false;
+                } else {
+                    if (valor === '.' && estado.valorAtual.includes('.')) return;
+                    if (estado.valorAtual === '0' && valor !== '.') {
+                        estado.valorAtual = valor;
+                    } else {
+                        // limita tamanho para evitar números absurdos
+                        if (estado.valorAtual.replace('-', '').replace('.', '').length >= 15) return;
+                        estado.valorAtual += valor;
+                    }
+                }
+                atualizarDisplay();
+            }
+
+            function entradaOperador(operador) {
+                if (estado.erro) {
+                    resetarEstado();
+                }
+
+                const atual = estado.valorAtual;
+                if (estado.operador && !estado.resetarProximo) {
+                    // calcular anterior antes de trocar operador
+                    const resultado = calcular(estado.valorAnterior, estado.operador, atual);
+                    if (resultado === 'Erro') {
+                        tratarErro();
+                        return;
+                    }
+                    estado.valorAnterior = resultado;
+                    estado.valorAtual = resultado;
+                } else {
+                    estado.valorAnterior = atual;
+                }
+                estado.operador = operador;
+                estado.resetarProximo = true;
+                atualizarDisplay();
+            }
+
+            function executarIgual() {
+                if (estado.erro) {
+                    resetarEstado();
+                    return;
+                }
+
+                if (estado.operador === null) {
+                    estado.valorAnterior = estado.valorAtual;
+                    atualizarDisplay();
+                    return;
+                }
+
+                const atual = estado.valorAtual;
+                const anterior = estado.valorAnterior;
+                const resultado = calcular(anterior, estado.operador, atual);
+                if (resultado === 'Erro') {
+                    tratarErro();
+                    return;
+                }
+                estado.valorAnterior = resultado;
+                estado.valorAtual = resultado;
+                estado.operador = null;
+                estado.resetarProximo = true;
+                atualizarDisplay();
+            }
+
+            function limpar() {
+                resetarEstado();
+            }
+
+            function backspace() {
+                if (estado.erro) {
+                    resetarEstado();
+                    return;
+                }
+                if (estado.resetarProximo) return;
+                let str = estado.valorAtual;
+                if (str.length <= 1 || (str.length === 2 && str.startsWith('-'))) {
+                    estado.valorAtual = '0';
+                } else {
+                    estado.valorAtual = str.slice(0, -1);
+                }
+                atualizarDisplay();
+            }
+
+            function porcentagem() {
+                if (estado.erro) {
+                    resetarEstado();
+                    return;
+                }
+                const num = parseFloat(estado.valorAtual);
+                if (isNaN(num)) return;
+                const resultado = num / 100;
+                estado.valorAtual = String(resultado);
+                estado.resetarProximo = true;
+                atualizarDisplay();
+            }
+
+            // === EVENTOS ===
+            document.querySelector('.botoes').addEventListener('click', function(e) {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+
+                // Ações baseadas em data-action ou data-value
+                const action = btn.dataset.action;
+                const value = btn.dataset.value;
+
+                // Ações especiais
+                if (action === 'clear') { limpar(); return; }
+                if (action === 'backspace') { backspace(); return; }
+                if (action === 'percent') { porcentagem(); return; }
+                if (action === 'equals') { executarIgual(); return; }
+
+                // Operadores
+                if (action === 'add') { entradaOperador('+'); return; }
+                if (action === 'subtract') { entradaOperador('-'); return; }
+                if (action === 'multiply') { entradaOperador('*'); return; }
+                if (action === 'divide') { entradaOperador('/'); return; }
+
+                // Números e ponto
+                if (value !== undefined) {
+                    entradaNumero(value);
+                }
+            });
+
+            // === TECLADO (extra) ===
+            document.addEventListener('keydown', function(e) {
+                const key = e.key;
+                if (key >= '0' && key <= '9') { entradaNumero(key); e.preventDefault(); }
+                else if (key === '.') { entradaNumero('.'); e.preventDefault(); }
+                else if (key === '+') { entradaOperador('+'); e.preventDefault(); }
+                else if (key === '-') { entradaOperador('-'); e.preventDefault(); }
+                else if (key === '*') { entradaOperador('*'); e.preventDefault(); }
+                else if (key === '/') { entradaOperador('/'); e.preventDefault(); }
+                else if (key === 'Enter' || key === '=') { executarIgual(); e.preventDefault(); }
+                else if (key === 'Backspace') { backspace(); e.preventDefault(); }
+                else if (key === 'Escape') { limpar(); e.preventDefault(); }
+                else if (key === '%') { porcentagem(); e.preventDefault(); }
+            });
+
+            // Inicializar display
+            resetarEstado();
+        })();
+    </script>
+</body>
+</html>
